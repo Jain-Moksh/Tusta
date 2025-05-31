@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 
-export const useTrendlines = () => {
+export const useTrendlines = (onClear = () => {}) => {
   const [trendlines, setTrendlines] = useState([]);
   const [isDrawing, setIsDrawing] = useState(false);
   const [startPoint, setStartPoint] = useState(null);
@@ -99,7 +99,8 @@ export const useTrendlines = () => {
     setTrendlines([]);
     setIsDrawing(false);
     setStartPoint(null);
-  }, []);
+    onClear();
+  }, [onClear]);
 
   return {
     trendlines,

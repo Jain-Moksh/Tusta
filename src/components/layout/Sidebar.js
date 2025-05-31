@@ -11,9 +11,9 @@ const Sidebar = ({ isExpanded, setIsExpanded }) => {
 
   return (
     <div 
-      className={`h-screen bg-gray-900 fixed left-0 top-0 flex flex-col py-6 transition-all duration-300 ease-in-out ${
-        isExpanded ? 'w-64' : 'w-20'
-      }`}
+      className={`h-screen bg-gray-900 fixed left-0 top-0 flex flex-col py-6 transition-all duration-300 ease-in-out z-50 ${
+        isExpanded ? 'w-48 md:w-48 lg:w-64' : 'w-16 md:w-16 lg:w-24'
+      } ${isExpanded ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
     >
       {/* Logo Section */}
       <div className="flex items-center mb-6 px-4">
@@ -21,9 +21,9 @@ const Sidebar = ({ isExpanded, setIsExpanded }) => {
           onClick={() => setIsExpanded(!isExpanded)}
           className="flex items-center hover:opacity-80 transition-opacity"
         >
-          <img src="/logo.svg" alt="Logo" className="w-10 h-10" />
+          <img src="/logo.svg" alt="Logo" className="w-8 h-8 lg:w-10 lg:h-10" />
           {isExpanded && (
-            <span className="ml-3 text-white font-semibold text-lg">Trading App</span>
+            <span className="ml-3 text-white font-semibold text-[10px] lg:text-xs xl:text-lg computer:text-lg">Trading App</span>
           )}
         </button>
       </div>
@@ -32,13 +32,13 @@ const Sidebar = ({ isExpanded, setIsExpanded }) => {
       <div className="px-3 mb-6">
         <div className={`flex items-center p-3 rounded-xl bg-gray-800 ${isExpanded ? 'justify-start' : 'justify-center'}`}>
           <div className="relative">
-            <UserCircleIcon className="w-10 h-10 text-gray-400" />
-            <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-gray-800"></div>
+            <UserCircleIcon className="w-8 h-8 lg:w-10 lg:h-10 text-gray-400" />
+            <div className="absolute bottom-0 right-0 w-2 h-2 lg:w-3 lg:h-3 bg-green-500 rounded-full border-2 border-gray-800"></div>
           </div>
           {isExpanded && (
             <div className="ml-3">
-              <p className="text-sm font-medium text-white">John Doe</p>
-              <p className="text-xs text-gray-400">Pro Trader</p>
+              <p className="text-[10px] lg:text-xs xl:text-base computer:text-base font-medium text-white">John Doe</p>
+              <p className="text-[8px] lg:text-[10px] xl:text-sm computer:text-sm text-gray-400">Pro Trader</p>
             </div>
           )}
         </div>
@@ -49,13 +49,13 @@ const Sidebar = ({ isExpanded, setIsExpanded }) => {
         {menuItems.map((item, index) => (
           <button
             key={index}
-            className={`flex items-center p-3 rounded-xl hover:bg-gray-800 text-gray-400 hover:text-white transition-colors ${
+            className={`flex items-center p-2 lg:p-3 rounded-xl hover:bg-gray-800 text-gray-400 hover:text-white transition-colors ${
               isExpanded ? 'justify-start' : 'justify-center'
             }`}
           >
-            <item.icon className="w-6 h-6 min-w-6" />
+            <item.icon className="w-4 h-4 lg:w-6 lg:h-6 min-w-[16px] lg:min-w-6" />
             {isExpanded && (
-              <span className="ml-3 text-sm font-medium whitespace-nowrap">
+              <span className="ml-3 text-[10px] lg:text-xs xl:text-base computer:text-base font-medium whitespace-nowrap">
                 {item.label}
               </span>
             )}
@@ -66,13 +66,13 @@ const Sidebar = ({ isExpanded, setIsExpanded }) => {
       {/* Logout Section */}
       <div className="px-3 mt-auto pt-6 border-t border-gray-800">
         <button
-          className={`flex items-center w-full p-3 rounded-xl hover:bg-gray-800 text-gray-400 hover:text-white transition-colors ${
+          className={`flex items-center w-full p-2 lg:p-3 rounded-xl hover:bg-gray-800 text-gray-400 hover:text-white transition-colors ${
             isExpanded ? 'justify-start' : 'justify-center'
           }`}
         >
-          <ArrowLeftOnRectangleIcon className="w-6 h-6 min-w-6" />
+          <ArrowLeftOnRectangleIcon className="w-4 h-4 lg:w-6 lg:h-6 min-w-[16px] lg:min-w-6" />
           {isExpanded && (
-            <span className="ml-3 text-sm font-medium whitespace-nowrap">
+            <span className="ml-3 text-[10px] lg:text-xs xl:text-base computer:text-base font-medium whitespace-nowrap">
               Logout
             </span>
           )}

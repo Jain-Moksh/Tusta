@@ -1,21 +1,28 @@
-import React, { useEffect, useState, useMemo, useRef } from 'react';
+import React, { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import { fetchStockData } from '../../services/stockApi';
 import { formatStockData } from '../../utils/formatData';
 import { candleStickOptions } from '../../constants/chartOptions';
 import { useTrendlines } from '../../hooks/useTrendlines';
 
-const TradingChart = ({ onTrendlinesUpdate, onOHLCUpdate }) => {
+const TradingChart = ({ 
+  onTrendlinesUpdate, 
+  onOHLCUpdate,
+  onCoordinatesUpdate,
+  clickedCoordinates: externalClickedCoordinates 
+}) => {
   const [stockData, setStockData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentOHLC, setCurrentOHLC] = useState(null);
-  const [clickedCoordinates, setClickedCoordinates] = useState({
-    start: null,
-    end: null
-  });
+  const [tempLine, setTempLine] = useState(null);
   const chartRef = useRef(null);
   
+  const clearCoordinates = useCallback(() => {
+    onCoordinatesUpdate({ start: null, end: null });
+    setTempLine(null);
+  }, [onCoordinatesUpdate]);
+
   const {
     trendlines,
     isDrawing,
@@ -26,7 +33,7 @@ const TradingChart = ({ onTrendlinesUpdate, onOHLCUpdate }) => {
     handleTrendlineDrag,
     deleteTrendline,
     clearAllTrendlines
-  } = useTrendlines();
+  } = useTrendlines(clearCoordinates);
 
   // Update parent component when trendlines change
   useEffect(() => {
@@ -75,23 +82,23 @@ const TradingChart = ({ onTrendlinesUpdate, onOHLCUpdate }) => {
   }, [stockData]);
 
   const MarketSummary = () => (
-    <div className="hidden md:block computer:hidden w-full bg-gray-800/50 rounded-lg p-4 mt-4">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="space-y-1">
-          <p className="text-gray-400 text-sm">Symbol</p>
-          <p className="text-white font-medium">ETH/USDT</p>
+    <div className="hidden lg:block computer:hidden w-full bg-gray-800/50 rounded-lg px-4 py-0 mt-2 lg:p-3 lg:mt-3 xl:px-5 xl:mt-2">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 lg:gap-3 xl:gap-4">
+        <div className="space-y-1 xl:space-y-2">
+          <p className="text-gray-400 text-sm lg:text-xs xl:text-base computer:text-base">Symbol</p>
+          <p className="text-white font-medium text-base lg:text-sm xl:text-xl computer:text-lg">ETH/USDT</p>
         </div>
-        <div className="space-y-1">
-          <p className="text-gray-400 text-sm">Interval</p>
-          <p className="text-white font-medium">1D</p>
+        <div className="space-y-1 xl:space-y-2">
+          <p className="text-gray-400 text-sm lg:text-xs xl:text-base computer:text-base">Interval</p>
+          <p className="text-white font-medium text-base lg:text-sm xl:text-xl computer:text-lg">1D</p>
         </div>
-        <div className="space-y-1">
-          <p className="text-gray-400 text-sm">Exchange</p>
-          <p className="text-white font-medium">Binance</p>
+        <div className="space-y-1 xl:space-y-2">
+          <p className="text-gray-400 text-sm lg:text-xs xl:text-base computer:text-base">Exchange</p>
+          <p className="text-white font-medium text-base lg:text-sm xl:text-xl computer:text-lg">Binance</p>
         </div>
-        <div className="space-y-1">
-          <p className="text-gray-400 text-sm">Last Updated</p>
-          <p className="text-white font-medium">
+        <div className="space-y-1 xl:space-y-2">
+          <p className="text-gray-400 text-sm lg:text-xs xl:text-base computer:text-base">Last Updated</p>
+          <p className="text-white font-medium text-base lg:text-sm xl:text-xl computer:text-lg">
             {currentOHLC ? new Date(currentOHLC.timestamp).toLocaleTimeString() : 'N/A'}
           </p>
         </div>
@@ -100,33 +107,75 @@ const TradingChart = ({ onTrendlinesUpdate, onOHLCUpdate }) => {
   );
 
   const handleChartPointClick = (event, chartContext, config) => {
-    if (typeof config.dataPointIndex === 'undefined') {
+    if (!config || typeof config.dataPointIndex === 'undefined') {
       console.log("Invalid click: No dataPointIndex");
       return;
     }
 
     // Ignore click if both coordinates are already set
-    if (clickedCoordinates.start && clickedCoordinates.end) {
+    if (externalClickedCoordinates.start && externalClickedCoordinates.end) {
       return;
     }
 
-    const dataPoint = seriesData[config.dataPointIndex];
-    const clickedPoint = {
-      x: new Date(dataPoint.x).getTime(),
-      y: parseFloat(dataPoint.y || dataPoint.close) // Use close price if y is not available
-    };
+    try {
+      const dataPoint = seriesData[config.dataPointIndex];
+      let yValue;
 
-    setClickedCoordinates(prev => {
-      if (!prev.start) {
-        return { ...prev, start: clickedPoint };
+      // Safely get y-value from chart context if available
+      if (chartContext?.w?.globals?.yaxis?.[0]?.toValue && event.offsetY !== undefined) {
+        yValue = chartContext.w.globals.yaxis[0].toValue(event.offsetY);
       } else {
-        return { ...prev, end: clickedPoint };
+        // Fallback to using the dataPoint values
+        yValue = dataPoint.y || dataPoint.close;
       }
-    });
+      
+      const clickedPoint = {
+        x: parseFloat(dataPoint.x),
+        y: parseFloat(yValue)
+      };
+
+      if (!externalClickedCoordinates.start) {
+        onCoordinatesUpdate({ ...externalClickedCoordinates, start: clickedPoint });
+        setTempLine({
+          start: clickedPoint,
+          end: clickedPoint
+        });
+      } else {
+        onCoordinatesUpdate({ ...externalClickedCoordinates, end: clickedPoint });
+        setTempLine(prev => ({
+          ...prev,
+          end: clickedPoint
+        }));
+      }
+    } catch (error) {
+      console.error('Error handling chart click:', error);
+    }
   };
 
-  const clearCoordinates = () => {
-    setClickedCoordinates({ start: null, end: null });
+  const handleChartMouseMove = (event, chartContext, config) => {
+    if (!externalClickedCoordinates.start || externalClickedCoordinates.end) return;
+
+    try {
+      if (!chartContext?.w?.globals?.yaxis?.[0]?.toValue || 
+          !chartContext?.w?.globals?.xaxis?.toValue ||
+          event.offsetX === undefined ||
+          event.offsetY === undefined) {
+        return;
+      }
+
+      const yValue = chartContext.w.globals.yaxis[0].toValue(event.offsetY);
+      const xValue = chartContext.w.globals.xaxis.toValue(event.offsetX);
+
+      setTempLine(prev => ({
+        ...prev,
+        end: { 
+          x: xValue,
+          y: parseFloat(yValue)
+        }
+      }));
+    } catch (error) {
+      console.error('Error updating temp line:', error);
+    }
   };
 
   if (loading) {
@@ -159,6 +208,7 @@ const TradingChart = ({ onTrendlinesUpdate, onOHLCUpdate }) => {
       ...candleStickOptions.chart,
       events: {
         click: handleChartPointClick,
+        mousemove: handleChartMouseMove
       },
       animations: {
         enabled: false
@@ -176,88 +226,65 @@ const TradingChart = ({ onTrendlinesUpdate, onOHLCUpdate }) => {
         }
       }
     },
-    tooltip: {
-      enabled: true,
-      shared: true,
-      custom: ({ seriesIndex, dataPointIndex, w }) => {
-        const o = w.globals.seriesCandleO[seriesIndex][dataPointIndex];
-        const h = w.globals.seriesCandleH[seriesIndex][dataPointIndex];
-        const l = w.globals.seriesCandleL[seriesIndex][dataPointIndex];
-        const c = w.globals.seriesCandleC[seriesIndex][dataPointIndex];
-        return `
-          <div class="p-2">
-            <div>O: ${o}</div>
-            <div>H: ${h}</div>
-            <div>L: ${l}</div>
-            <div>C: ${c}</div>
-          </div>
-        `;
-      }
-    },
     annotations: {
       position: 'front',
-      xaxis: trendlines.map(trendline => ({
-        id: trendline.id,
-        x: trendline.start.x,
-        x2: trendline.end.x,
-        y: trendline.start.y,
-        y2: trendline.end.y,
-        strokeDashArray: 0,
-        borderColor: '#2196F3',
-        opacity: 1,
-        strokeWidth: 3,
-        label: {
-          borderColor: '#2196F3',
-          style: {
-            fontSize: '12px',
-            color: '#fff',
-            background: '#2196F3'
+      points: tempLine ? [
+        {
+          x: tempLine.start.x,
+          y: tempLine.start.y,
+          marker: {
+            size: 6,
+            fillColor: '#FFD700',
+            strokeColor: '#FFD700',
+            strokeWidth: 2
           }
         },
-        draggable: true,
-        events: {
-          mouseenter: () => {
-            setHoveredTrendline(trendline.id);
-            document.body.style.cursor = 'grab';
-          },
-          mouseleave: () => {
-            setHoveredTrendline(null);
-            document.body.style.cursor = 'default';
-          },
-          mousedown: () => {
-            document.body.style.cursor = 'grabbing';
-          },
-          mouseup: () => {
-            document.body.style.cursor = 'grab';
-          },
-          dblclick: () => handleTrendlineDoubleClick(trendline),
-          dragend: (e, { start, end }) => {
-            handleTrendlineDrag(trendline, start, end);
-            document.body.style.cursor = 'grab';
+        {
+          x: tempLine.end.x,
+          y: tempLine.end.y,
+          marker: {
+            size: 6,
+            fillColor: '#FFD700',
+            strokeColor: '#FFD700',
+            strokeWidth: 2
           }
         }
-      }))
+      ] : [],
+      xaxis: [],
+      yaxis: [],
+      lines: tempLine ? [
+        {
+          type: 'line',
+          x1: tempLine.start.x,
+          y1: tempLine.start.y,
+          x2: tempLine.end.x,
+          y2: tempLine.end.y,
+          borderColor: '#FFD700',
+          strokeWidth: 2,
+          opacity: 1
+        }
+      ] : []
     }
   };
 
   return (
     <div className="w-full h-full bg-gray-900 rounded-lg p-4">
       <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-4 lg:space-x-3 xl:space-x-4">
           <button
-            className="px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+            className="px-3 py-1.5 lg:px-2 lg:py-1 xl:px-3 xl:py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-[10px] sm:text-xstext-xs md:text-sm lg:text-sm xl:text-base"
             onClick={clearAllTrendlines}
           >
             Clear All Trendlines
           </button>
           {isDrawing && (
-            <span className="text-yellow-500">
+            <span className="text-yellow-500 text-base lg:text-sm xl:text-lg computer:text-xl">
               Click on another point to complete the trendline
             </span>
           )}
         </div>
-        <div className="text-sm text-gray-400">
-          Single-click : Show coordinates 
+        <div className="text-[10px] sm:text-xs md:text-sm lg:text-xs xl:text-base computer:text-xl text-gray-400">
+          Single-click : To Show coordinates 
         </div>
       </div>
       
@@ -292,35 +319,32 @@ const TradingChart = ({ onTrendlinesUpdate, onOHLCUpdate }) => {
         ))}
       </div>
 
-      
-      
-
-      {/* Trendline Coordinates - Visible on screens smaller than computer */}
-      <div className="block computer:hidden bg-gray-800/50 rounded-lg p-4 mt-4">
-        <div className="flex justify-between mb-3">
-          <span className="text-gray-400">Trendline Coordinates</span>
+      {/* Trendline Coordinates - Visible on screens larger than 1024px */}
+      <div className="hidden lg:block computer:hidden bg-gray-800/50 rounded-lg p-4 mt-4 lg:p-3 lg:mt-3 xl:p-4 xl:mt-4">
+        <div className="flex justify-between mb-3 lg:mb-2 xl:mb-3">
+          <span className="text-gray-400 text-base lg:text-sm xl:text-base">Trendline Coordinates</span>
           <button
-            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+            className="px-3 py-1 lg:px-2 lg:py-0.5 xl:px-3 xl:py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm lg:text-xs xl:text-sm"
             onClick={clearCoordinates}
           >
             Clear
           </button>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-gray-900/50 rounded-lg p-3">
-            <div className="text-sm text-gray-400 mb-1">Start Coordinates</div>
-            <div className="text-lg text-white">
-              {clickedCoordinates.start 
-                ? `(${new Date(clickedCoordinates.start.x).toLocaleDateString()}, ${clickedCoordinates.start.y?.toFixed(2)})`
+        <div className="grid grid-cols-2 gap-3 lg:gap-2 xl:gap-3">
+          <div className="bg-gray-900/50 rounded-lg p-3 lg:p-2 xl:p-3">
+            <div className="text-sm lg:text-xs xl:text-sm text-gray-400 mb-1">Start Coordinates</div>
+            <div className="text-lg lg:text-base xl:text-lg text-white">
+              {externalClickedCoordinates.start 
+                ? `(${new Date(externalClickedCoordinates.start.x).toLocaleDateString()}, ${parseFloat(externalClickedCoordinates.start.y).toFixed(2)})`
                 : 'No trendline'
               }
             </div>
           </div>
-          <div className="bg-gray-900/50 rounded-lg p-3">
-            <div className="text-sm text-gray-400 mb-1">End Coordinates</div>
-            <div className="text-lg text-white">
-              {clickedCoordinates.end 
-                ? `(${new Date(clickedCoordinates.end.x).toLocaleDateString()}, ${clickedCoordinates.end.y?.toFixed(2)})`
+          <div className="bg-gray-900/50 rounded-lg p-3 lg:p-2 xl:p-3">
+            <div className="text-sm lg:text-xs xl:text-sm text-gray-400 mb-1">End Coordinates</div>
+            <div className="text-lg lg:text-base xl:text-lg text-white">
+              {externalClickedCoordinates.end 
+                ? `(${new Date(externalClickedCoordinates.end.x).toLocaleDateString()}, ${parseFloat(externalClickedCoordinates.end.y).toFixed(2)})`
                 : 'No trendline'
               }
             </div>
