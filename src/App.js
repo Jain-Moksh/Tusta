@@ -18,7 +18,7 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen fixed inset-0 overflow-auto">  
+    <div className="min-h-screen fixed inset-0 overflow-auto pb-24">  
       {/* Sidebar */}
       <Sidebar isExpanded={isSidebarExpanded} setIsExpanded={setIsSidebarExpanded} />
 
@@ -35,7 +35,7 @@ function App() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             {/* Chart Section */}
             <div className="lg:col-span-8 h-full">
-              <div className="bg-gray-900  rounded-lg h-[500px] 2xl:h-[85vh] w-full">
+              <div className="bg-gray-900 rounded-lg h-[500px] computer:h-[85vh] w-full">
                 <TradingChart 
                   onTrendlinesUpdate={handleTrendlinesUpdate}
                   onOHLCUpdate={handleOHLCUpdate}
@@ -45,7 +45,7 @@ function App() {
             
             {/* Trading Interface */}
             <div className="lg:col-span-4 h-full ">
-              <div className="bg-gray-900 rounded-lg p-4 h-[500px] 2xl:h-[85vh] w-full flex flex-col">
+              <div className="bg-gray-900 rounded-lg p-4 h-[500px] computer:h-[85vh] w-full flex flex-col">
                 <div className="flex justify-between mb-4">
                   <button className="px-4 py-2 bg-yellow-400 text-black rounded-lg font-medium">
                     Swap
@@ -120,8 +120,35 @@ function App() {
                     </div>
                   </div>
 
+                  {/* Trendline Coordinates Section - Only visible on computer screens */}
+                  <div className="hidden computer:block bg-gray-800 rounded-lg p-4 mt-4">
+                    <div className="flex justify-between mb-3">
+                      <span className="text-gray-400">Trendline Coordinates</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="bg-gray-900/50 rounded-lg p-3">
+                        <div className="text-sm text-gray-400 mb-1">Start Coordinates</div>
+                        <div className="text-lg text-white">
+                          {trendlines.length > 0 
+                            ? `(${trendlines[trendlines.length - 1].start.x.toFixed(2)}, ${trendlines[trendlines.length - 1].start.y.toFixed(2)})`
+                            : 'No trendline'
+                          }
+                        </div>
+                      </div>
+                      <div className="bg-gray-900/50 rounded-lg p-3">
+                        <div className="text-sm text-gray-400 mb-1">End Coordinates</div>
+                        <div className="text-lg text-white">
+                          {trendlines.length > 0 
+                            ? `(${trendlines[trendlines.length - 1].end.x.toFixed(2)}, ${trendlines[trendlines.length - 1].end.y.toFixed(2)})`
+                            : 'No trendline'
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* OHLC Information */}
-                  <div className="bg-gray-800 rounded-lg p-4">
+                  <div className="bg-gray-800 rounded-lg p-4 mb-3 computer:mb-0">
                     <div className="flex justify-between mb-3">
                       <span className="text-gray-400">OHLC Information</span>
                     </div>
@@ -146,7 +173,7 @@ function App() {
                   </div>
 
                   {/* Market Summary for Computer Screens */}
-                  <div className="hidden 2xl:block bg-gray-800 rounded-lg p-4">
+                  <div className="hidden computer:block bg-gray-800 rounded-lg p-4 mb-4">
                     <div className="flex justify-between mb-3">
                       <span className="text-gray-400">Market Summary</span>
                     </div>

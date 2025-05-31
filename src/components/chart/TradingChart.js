@@ -71,7 +71,7 @@ const TradingChart = ({ onTrendlinesUpdate, onOHLCUpdate }) => {
   }, [stockData]);
 
   const MarketSummary = () => (
-    <div className="hidden md:block 2xl:hidden w-full bg-gray-800/50 rounded-lg p-4 mt-4">
+    <div className="hidden md:block computer:hidden w-full bg-gray-800/50 rounded-lg p-4 mt-4">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="space-y-1">
           <p className="text-gray-400 text-sm">Symbol</p>
@@ -264,8 +264,39 @@ const TradingChart = ({ onTrendlinesUpdate, onOHLCUpdate }) => {
         ))}
       </div>
 
+      
+      
+
+      {/* Trendline Coordinates - Visible on screens smaller than computer */}
+      <div className="block computer:hidden bg-gray-800/50 rounded-lg p-4 mt-4">
+        <div className="flex justify-between mb-3">
+          <span className="text-gray-400">Trendline Coordinates</span>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-gray-900/50 rounded-lg p-3">
+            <div className="text-sm text-gray-400 mb-1">Start Coordinates</div>
+            <div className="text-lg text-white">
+              {trendlines.length > 0 
+                ? `(${trendlines[trendlines.length - 1].start.x.toFixed(2)}, ${trendlines[trendlines.length - 1].start.y.toFixed(2)})`
+                : 'No trendline'
+              }
+            </div>
+          </div>
+          <div className="bg-gray-900/50 rounded-lg p-3">
+            <div className="text-sm text-gray-400 mb-1">End Coordinates</div>
+            <div className="text-lg text-white">
+              {trendlines.length > 0 
+                ? `(${trendlines[trendlines.length - 1].end.x.toFixed(2)}, ${trendlines[trendlines.length - 1].end.y.toFixed(2)})`
+                : 'No trendline'
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Market Summary */}
       <MarketSummary />
+      
     </div>
   );
 };
