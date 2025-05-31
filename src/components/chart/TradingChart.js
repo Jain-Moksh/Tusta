@@ -10,6 +10,10 @@ const TradingChart = ({ onTrendlinesUpdate, onOHLCUpdate }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentOHLC, setCurrentOHLC] = useState(null);
+  const [clickedCoordinates, setClickedCoordinates] = useState({
+    start: null,
+    end: null
+  });
   const chartRef = useRef(null);
   
   const {
@@ -95,6 +99,36 @@ const TradingChart = ({ onTrendlinesUpdate, onOHLCUpdate }) => {
     </div>
   );
 
+  const handleChartPointClick = (event, chartContext, config) => {
+    if (typeof config.dataPointIndex === 'undefined') {
+      console.log("Invalid click: No dataPointIndex");
+      return;
+    }
+
+    // Ignore click if both coordinates are already set
+    if (clickedCoordinates.start && clickedCoordinates.end) {
+      return;
+    }
+
+    const dataPoint = seriesData[config.dataPointIndex];
+    const clickedPoint = {
+      x: new Date(dataPoint.x).getTime(),
+      y: parseFloat(dataPoint.y || dataPoint.close) // Use close price if y is not available
+    };
+
+    setClickedCoordinates(prev => {
+      if (!prev.start) {
+        return { ...prev, start: clickedPoint };
+      } else {
+        return { ...prev, end: clickedPoint };
+      }
+    });
+  };
+
+  const clearCoordinates = () => {
+    setClickedCoordinates({ start: null, end: null });
+  };
+
   if (loading) {
     return (
       <div className="w-full h-[calc(100vh-12rem)] bg-gray-900 rounded-lg p-4 flex items-center justify-center">
@@ -124,13 +158,7 @@ const TradingChart = ({ onTrendlinesUpdate, onOHLCUpdate }) => {
     chart: {
       ...candleStickOptions.chart,
       events: {
-        click: (event, chartContext, config) => {
-          if (typeof config.dataPointIndex === 'undefined') {
-            console.log("Invalid click: No dataPointIndex");
-            return;
-          }
-          handleChartClick(event, chartContext, config);
-        }
+        click: handleChartPointClick,
       },
       animations: {
         enabled: false
@@ -229,7 +257,7 @@ const TradingChart = ({ onTrendlinesUpdate, onOHLCUpdate }) => {
           )}
         </div>
         <div className="text-sm text-gray-400">
-          Double-click: Show coordinates • Drag: Move trendline
+          Single-click : Show coordinates 
         </div>
       </div>
       
@@ -271,13 +299,19 @@ const TradingChart = ({ onTrendlinesUpdate, onOHLCUpdate }) => {
       <div className="block computer:hidden bg-gray-800/50 rounded-lg p-4 mt-4">
         <div className="flex justify-between mb-3">
           <span className="text-gray-400">Trendline Coordinates</span>
+          <button
+            className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+            onClick={clearCoordinates}
+          >
+            Clear
+          </button>
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-gray-900/50 rounded-lg p-3">
             <div className="text-sm text-gray-400 mb-1">Start Coordinates</div>
             <div className="text-lg text-white">
-              {trendlines.length > 0 
-                ? `(${trendlines[trendlines.length - 1].start.x.toFixed(2)}, ${trendlines[trendlines.length - 1].start.y.toFixed(2)})`
+              {clickedCoordinates.start 
+                ? `(${new Date(clickedCoordinates.start.x).toLocaleDateString()}, ${clickedCoordinates.start.y?.toFixed(2)})`
                 : 'No trendline'
               }
             </div>
@@ -285,8 +319,8 @@ const TradingChart = ({ onTrendlinesUpdate, onOHLCUpdate }) => {
           <div className="bg-gray-900/50 rounded-lg p-3">
             <div className="text-sm text-gray-400 mb-1">End Coordinates</div>
             <div className="text-lg text-white">
-              {trendlines.length > 0 
-                ? `(${trendlines[trendlines.length - 1].end.x.toFixed(2)}, ${trendlines[trendlines.length - 1].end.y.toFixed(2)})`
+              {clickedCoordinates.end 
+                ? `(${new Date(clickedCoordinates.end.x).toLocaleDateString()}, ${clickedCoordinates.end.y?.toFixed(2)})`
                 : 'No trendline'
               }
             </div>
@@ -296,7 +330,7 @@ const TradingChart = ({ onTrendlinesUpdate, onOHLCUpdate }) => {
 
       {/* Market Summary */}
       <MarketSummary />
-      
+
     </div>
   );
 };
