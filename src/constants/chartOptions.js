@@ -2,7 +2,7 @@ export const candleStickOptions = {
     chart: {
         type: 'candlestick',
         height: 500,
-        background: '#1a1a1a',
+        background: '#0B1221',
         foreColor: '#d1d4dc',
         animations: {
             enabled: true,
@@ -21,11 +21,23 @@ export const candleStickOptions = {
                 reset: true
             },
             autoSelected: 'zoom'
+        },
+        margin: {
+            top: 30,
+            right: 1,
+            bottom: 0,
+            left: 1
         }
     },
     grid: {
-        borderColor: '#2B2B43',
-        strokeDashArray: 0
+        borderColor: '#1C2537',
+        strokeDashArray: 0,
+        padding: {
+            top: 20,
+            right: 5,
+            bottom: 20,
+            left: 5
+        }
     },
     plotOptions: {
         candlestick: {
@@ -46,10 +58,10 @@ export const candleStickOptions = {
             }
         },
         axisBorder: {
-            color: '#2B2B43'
+            color: '#1C2537'
         },
         axisTicks: {
-            color: '#2B2B43'
+            color: '#1C2537'
         }
     },
     yaxis: {
