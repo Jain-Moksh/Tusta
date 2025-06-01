@@ -76,12 +76,12 @@ function App() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
             {/* Chart Section */}
             <div className="lg:col-span-8 h-full">
-              <div className="bg-gray-900 rounded-lg h-[500px] computer:h-[85vh] w-full">
+              <div className="bg-gray-900 rounded-lg h-fit computer:h-[85vh] w-full">
                 <TradingChart 
-                  onTrendlinesUpdate={handleTrendlinesUpdate}
-                  onOHLCUpdate={handleOHLCUpdate}
-                  onCoordinatesUpdate={handleCoordinatesUpdate}
-                  clickedCoordinates={clickedCoordinates}
+                  // onTrendlinesUpdate={handleTrendlinesUpdate}
+                  // onOHLCUpdate={handleOHLCUpdate}
+                  // onCoordinatesUpdate={handleCoordinatesUpdate}
+                  // clickedCoordinates={clickedCoordinates}
                 />
               </div>
             </div>
@@ -164,70 +164,9 @@ function App() {
                   </div>
 
                   {/* Trendline Coordinates for Small Screens (below 1024px) */}
-                  <div className="block lg:hidden bg-gray-800 rounded-lg p-3 mt-3">
-                    <div className="flex justify-between mb-2">
-                      <span className="text-gray-400 text-[10px]">Trendline Coordinates</span>
-                      <button
-                        className="px-2 py-0.5 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-[10px]"
-                        onClick={clearCoordinates}
-                      >
-                        Clear
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="bg-gray-900/50 rounded-lg p-2">
-                        <div className="text-[10px] text-gray-400 mb-1">Start Coordinates</div>
-                        <div className="text-sm text-white">
-                          {clickedCoordinates.start 
-                            ? `(${new Date(clickedCoordinates.start.x).toLocaleDateString()}, ${parseFloat(clickedCoordinates.start.y).toFixed(2)})`
-                            : 'No trendline'
-                          }
-                        </div>
-                      </div>
-                      <div className="bg-gray-900/50 rounded-lg p-2">
-                        <div className="text-[10px] text-gray-400 mb-1">End Coordinates</div>
-                        <div className="text-sm text-white">
-                          {clickedCoordinates.end 
-                            ? `(${new Date(clickedCoordinates.end.x).toLocaleDateString()}, ${parseFloat(clickedCoordinates.end.y).toFixed(2)})`
-                            : 'No trendline'
-                          }
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
+                  
                   {/* Trendline Coordinates for Computer Screens */}
-                  <div className="hidden computer:block bg-gray-800 rounded-lg p-4 lg:p-3 xl:p-4 mt-4">
-                    <div className="flex justify-between mb-3 lg:mb-2 xl:mb-3">
-                      <span className="text-gray-400 text-base lg:text-sm xl:text-base computer:text-lg">Trendline Coordinates</span>
-                      <button
-                        className="px-3 py-1 lg:px-2 lg:py-0.5 xl:px-3 xl:py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm lg:text-xs xl:text-sm computer:text-base"
-                        onClick={clearCoordinates}
-                      >
-                        Clear
-                      </button>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3 lg:gap-2 xl:gap-3">
-                      <div className="bg-gray-900/50 rounded-lg p-3 lg:p-2 xl:p-3">
-                        <div className="text-sm lg:text-xs xl:text-sm computer:text-base text-gray-400 mb-1">Start Coordinates</div>
-                        <div className="text-lg lg:text-base xl:text-lg computer:text-xl text-white">
-                          {clickedCoordinates.start 
-                            ? `(${new Date(clickedCoordinates.start.x).toLocaleDateString()}, ${parseFloat(clickedCoordinates.start.y).toFixed(2)})`
-                            : 'No trendline'
-                          }
-                        </div>
-                      </div>
-                      <div className="bg-gray-900/50 rounded-lg p-3 lg:p-2 xl:p-3">
-                        <div className="text-sm lg:text-xs xl:text-sm computer:text-base text-gray-400 mb-1">End Coordinates</div>
-                        <div className="text-lg lg:text-base xl:text-lg computer:text-xl text-white">
-                          {clickedCoordinates.end 
-                            ? `(${new Date(clickedCoordinates.end.x).toLocaleDateString()}, ${parseFloat(clickedCoordinates.end.y).toFixed(2)})`
-                            : 'No trendline'
-                          }
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                 
 
                   {/* OHLC Information */}
                   <div className="bg-gray-800 rounded-lg p-3 lg:p-4 xl:p-4">
